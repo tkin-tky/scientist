@@ -1,0 +1,1167 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>偉大な科学者クイズ</title>
+<link href="https://fonts.googleapis.com/css2?family=Kaisei+Decol:wght@400;700&family=Noto+Sans+JP:wght@300;400;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0e1a;
+    --surface: #111827;
+    --surface2: #1a2235;
+    --accent: #e2b04a;
+    --accent2: #4a8fe2;
+    --accent3: #e24a7a;
+    --text: #e8e8f0;
+    --text-muted: #8892a4;
+    --correct: #3ecf8e;
+    --wrong: #e24a4a;
+    --radius: 16px;
+    --glow: 0 0 30px rgba(226,176,74,0.25);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Noto Sans JP', sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+    position: relative;
+  }
+
+  /* Stars background */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      radial-gradient(1px 1px at 10% 20%, rgba(255,255,255,0.6) 0%, transparent 100%),
+      radial-gradient(1px 1px at 30% 60%, rgba(255,255,255,0.4) 0%, transparent 100%),
+      radial-gradient(1.5px 1.5px at 50% 10%, rgba(255,255,255,0.5) 0%, transparent 100%),
+      radial-gradient(1px 1px at 70% 40%, rgba(255,255,255,0.3) 0%, transparent 100%),
+      radial-gradient(1px 1px at 85% 70%, rgba(255,255,255,0.4) 0%, transparent 100%),
+      radial-gradient(1px 1px at 15% 85%, rgba(255,255,255,0.3) 0%, transparent 100%),
+      radial-gradient(1.5px 1.5px at 60% 80%, rgba(255,255,255,0.5) 0%, transparent 100%),
+      radial-gradient(1px 1px at 40% 45%, rgba(255,255,255,0.2) 0%, transparent 100%),
+      radial-gradient(1px 1px at 90% 15%, rgba(255,255,255,0.4) 0%, transparent 100%),
+      radial-gradient(1px 1px at 25% 35%, rgba(255,255,255,0.3) 0%, transparent 100%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .screen {
+    display: none;
+    position: relative;
+    z-index: 1;
+    min-height: 100vh;
+    padding: 20px 16px 40px;
+    animation: fadeIn 0.4s ease;
+  }
+  .screen.active { display: flex; flex-direction: column; align-items: center; }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(12px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* ===== TITLE SCREEN ===== */
+  #title-screen {
+    justify-content: center;
+    text-align: center;
+    gap: 0;
+  }
+
+  .title-orbit {
+    position: relative;
+    width: 160px;
+    height: 160px;
+    margin: 0 auto 32px;
+  }
+
+  .orbit-ring {
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    border: 1.5px solid rgba(226,176,74,0.3);
+    animation: spin 8s linear infinite;
+  }
+  .orbit-ring::after {
+    content: '⚛';
+    position: absolute;
+    top: -12px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 20px;
+    color: var(--accent);
+    text-shadow: 0 0 12px var(--accent);
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .orbit-ring:nth-child(2) {
+    inset: 20px;
+    border-color: rgba(74,143,226,0.3);
+    animation-duration: 5s;
+    animation-direction: reverse;
+  }
+  .orbit-ring:nth-child(2)::after { content: '✦'; font-size: 14px; color: var(--accent2); text-shadow: 0 0 12px var(--accent2); }
+
+  .orbit-core {
+    position: absolute;
+    inset: 50px;
+    background: radial-gradient(circle, rgba(226,176,74,0.3), rgba(226,176,74,0.05));
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 32px;
+    box-shadow: 0 0 40px rgba(226,176,74,0.2);
+  }
+
+  .title-main {
+    font-family: 'Kaisei Decol', serif;
+    font-size: 28px;
+    font-weight: 700;
+    color: var(--accent);
+    text-shadow: 0 0 30px rgba(226,176,74,0.5);
+    letter-spacing: 0.05em;
+    line-height: 1.3;
+    margin-bottom: 8px;
+  }
+
+  .title-sub {
+    font-size: 13px;
+    color: var(--text-muted);
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    margin-bottom: 48px;
+  }
+
+  .title-info {
+    background: var(--surface);
+    border: 1px solid rgba(226,176,74,0.2);
+    border-radius: var(--radius);
+    padding: 20px;
+    width: 100%;
+    max-width: 340px;
+    margin-bottom: 40px;
+  }
+
+  .title-info-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+    font-size: 14px;
+  }
+  .title-info-row:last-child { border-bottom: none; }
+  .title-info-row span:first-child { color: var(--text-muted); }
+  .title-info-row span:last-child { color: var(--accent); font-weight: 700; }
+
+  .btn-primary {
+    background: linear-gradient(135deg, var(--accent), #c8922a);
+    color: #1a0f00;
+    border: none;
+    border-radius: 50px;
+    padding: 16px 48px;
+    font-size: 18px;
+    font-weight: 700;
+    font-family: 'Noto Sans JP', sans-serif;
+    cursor: pointer;
+    box-shadow: 0 4px 24px rgba(226,176,74,0.4);
+    transition: all 0.2s;
+    letter-spacing: 0.1em;
+  }
+  .btn-primary:active { transform: scale(0.96); }
+
+  /* ===== QUIZ SCREEN ===== */
+  #quiz-screen { gap: 0; }
+
+  .quiz-header {
+    width: 100%;
+    max-width: 400px;
+    margin-bottom: 20px;
+  }
+
+  .stage-info {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+  }
+
+  .stage-badge {
+    background: rgba(226,176,74,0.15);
+    border: 1px solid rgba(226,176,74,0.4);
+    color: var(--accent);
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+  }
+
+  .score-display {
+    font-size: 14px;
+    color: var(--text-muted);
+  }
+  .score-display span { color: var(--accent); font-weight: 700; }
+
+  .progress-bar {
+    background: var(--surface2);
+    border-radius: 4px;
+    height: 6px;
+    overflow: hidden;
+  }
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent2), var(--accent));
+    border-radius: 4px;
+    transition: width 0.5s ease;
+  }
+
+  .question-card {
+    background: var(--surface);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: var(--radius);
+    padding: 24px 20px;
+    width: 100%;
+    max-width: 400px;
+    margin-bottom: 20px;
+    position: relative;
+    overflow: hidden;
+  }
+  .question-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--accent2), var(--accent));
+  }
+
+  .q-label {
+    font-size: 11px;
+    color: var(--accent2);
+    letter-spacing: 0.2em;
+    font-weight: 700;
+    margin-bottom: 12px;
+  }
+
+  .q-text {
+    font-size: 15px;
+    line-height: 1.8;
+    color: var(--text);
+  }
+
+  .choices {
+    width: 100%;
+    max-width: 400px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .choice-btn {
+    background: var(--surface);
+    border: 1.5px solid rgba(255,255,255,0.1);
+    border-radius: var(--radius);
+    padding: 16px 20px;
+    color: var(--text);
+    font-size: 15px;
+    font-family: 'Noto Sans JP', sans-serif;
+    text-align: left;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .choice-btn:active { transform: scale(0.98); }
+  .choice-btn.hover-state { border-color: rgba(226,176,74,0.5); background: rgba(226,176,74,0.08); }
+  .choice-btn.correct {
+    border-color: var(--correct);
+    background: rgba(62,207,142,0.12);
+    color: var(--correct);
+    animation: correctPulse 0.4s ease;
+  }
+  .choice-btn.wrong {
+    border-color: var(--wrong);
+    background: rgba(226,74,74,0.12);
+    color: var(--wrong);
+  }
+  .choice-btn.disabled { cursor: default; }
+
+  @keyframes correctPulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.02); }
+    100% { transform: scale(1); }
+  }
+
+  .choice-letter {
+    width: 28px;
+    height: 28px;
+    border-radius: 8px;
+    background: rgba(255,255,255,0.06);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: 700;
+    flex-shrink: 0;
+    color: var(--text-muted);
+  }
+  .correct .choice-letter { background: rgba(62,207,142,0.2); color: var(--correct); }
+  .wrong .choice-letter { background: rgba(226,74,74,0.2); color: var(--wrong); }
+
+  /* ===== RESULT CARD (after each question) ===== */
+  .result-card {
+    display: none;
+    background: var(--surface);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: var(--radius);
+    padding: 20px;
+    width: 100%;
+    max-width: 400px;
+    margin-top: 16px;
+    animation: slideUp 0.35s ease;
+  }
+  .result-card.active { display: block; }
+
+  @keyframes slideUp {
+    from { opacity: 0; transform: translateY(16px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .result-verdict {
+    font-size: 16px;
+    font-weight: 700;
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .result-verdict.correct-v { color: var(--correct); }
+  .result-verdict.wrong-v { color: var(--wrong); }
+
+  .result-answer {
+    font-size: 13px;
+    color: var(--text-muted);
+    margin-bottom: 14px;
+  }
+  .result-answer strong { color: var(--accent); }
+
+  .result-desc {
+    font-size: 14px;
+    line-height: 1.8;
+    color: #c0c8d8;
+    padding-top: 12px;
+    border-top: 1px solid rgba(255,255,255,0.07);
+  }
+
+  .btn-next {
+    width: 100%;
+    max-width: 400px;
+    background: var(--surface2);
+    border: 1.5px solid rgba(226,176,74,0.4);
+    border-radius: 50px;
+    padding: 14px;
+    color: var(--accent);
+    font-size: 15px;
+    font-weight: 700;
+    font-family: 'Noto Sans JP', sans-serif;
+    cursor: pointer;
+    margin-top: 16px;
+    transition: all 0.2s;
+    display: none;
+    letter-spacing: 0.05em;
+  }
+  .btn-next.active { display: block; }
+  .btn-next:active { background: rgba(226,176,74,0.1); }
+
+  /* ===== STAGE RESULT SCREEN ===== */
+  #stage-result-screen {
+    justify-content: center;
+    text-align: center;
+    gap: 24px;
+  }
+
+  .fireworks {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .particle {
+    position: absolute;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    animation: burst 1.2s ease-out forwards;
+  }
+
+  @keyframes burst {
+    0% { transform: translate(0, 0) scale(1); opacity: 1; }
+    100% { transform: translate(var(--tx), var(--ty)) scale(0); opacity: 0; }
+  }
+
+  .stage-result-icon {
+    font-size: 64px;
+    animation: bounce 1s ease infinite alternate;
+  }
+  @keyframes bounce {
+    from { transform: translateY(-6px); }
+    to { transform: translateY(6px); }
+  }
+
+  .stage-result-title {
+    font-family: 'Kaisei Decol', serif;
+    font-size: 26px;
+    color: var(--accent);
+    text-shadow: 0 0 24px rgba(226,176,74,0.4);
+  }
+
+  .praise-text {
+    font-size: 16px;
+    color: var(--text);
+    line-height: 1.7;
+    max-width: 320px;
+  }
+
+  .score-cards {
+    display: flex;
+    gap: 16px;
+    width: 100%;
+    max-width: 340px;
+  }
+
+  .score-card {
+    flex: 1;
+    background: var(--surface);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: var(--radius);
+    padding: 16px 12px;
+    text-align: center;
+  }
+
+  .score-card-label {
+    font-size: 11px;
+    color: var(--text-muted);
+    letter-spacing: 0.15em;
+    margin-bottom: 8px;
+  }
+
+  .score-card-value {
+    font-family: 'Kaisei Decol', serif;
+    font-size: 32px;
+    font-weight: 700;
+    color: var(--accent);
+  }
+
+  .score-card-denom {
+    font-size: 14px;
+    color: var(--text-muted);
+  }
+
+  .avg-card {
+    background: var(--surface);
+    border: 1px solid rgba(74,143,226,0.3);
+    border-radius: var(--radius);
+    padding: 16px 24px;
+    width: 100%;
+    max-width: 340px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .avg-label { font-size: 13px; color: var(--text-muted); }
+  .avg-value {
+    font-family: 'Kaisei Decol', serif;
+    font-size: 28px;
+    color: var(--accent2);
+    font-weight: 700;
+  }
+
+  /* ===== FINAL SCREEN ===== */
+  #final-screen {
+    justify-content: center;
+    text-align: center;
+    gap: 24px;
+  }
+
+  .final-rank {
+    font-family: 'Kaisei Decol', serif;
+    font-size: 22px;
+    color: var(--accent);
+    background: var(--surface);
+    border: 2px solid var(--accent);
+    border-radius: var(--radius);
+    padding: 12px 32px;
+    box-shadow: var(--glow);
+  }
+
+  .total-score-ring {
+    width: 140px;
+    height: 140px;
+    position: relative;
+  }
+
+  .total-score-ring svg {
+    transform: rotate(-90deg);
+  }
+
+  .total-score-text {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .total-score-num {
+    font-family: 'Kaisei Decol', serif;
+    font-size: 36px;
+    color: var(--accent);
+    font-weight: 700;
+    line-height: 1;
+  }
+
+  .total-score-denom {
+    font-size: 13px;
+    color: var(--text-muted);
+  }
+</style>
+</head>
+<body>
+
+<!-- TITLE SCREEN -->
+<div id="title-screen" class="screen active">
+  <div class="title-orbit">
+    <div class="orbit-ring"></div>
+    <div class="orbit-ring"></div>
+    <div class="orbit-core">🔬</div>
+  </div>
+  <div class="title-main">偉大な科学者<br>クイズ</div>
+  <div class="title-sub">SCIENTIST QUIZ</div>
+  <div class="title-info">
+    <div class="title-info-row"><span>ステージ数</span><span>全10ステージ</span></div>
+    <div class="title-info-row"><span>問題数</span><span>全50問</span></div>
+    <div class="title-info-row"><span>選択肢</span><span>4択</span></div>
+    <div class="title-info-row"><span>解説</span><span>各問あり</span></div>
+  </div>
+  <button class="btn-primary" onclick="startGame()">ゲームスタート</button>
+</div>
+
+<!-- QUIZ SCREEN -->
+<div id="quiz-screen" class="screen">
+  <div class="quiz-header">
+    <div class="stage-info">
+      <div class="stage-badge" id="stage-label">STAGE 1</div>
+      <div class="score-display">スコア <span id="current-score">0</span>/<span id="current-max">0</span></div>
+    </div>
+    <div class="progress-bar"><div class="progress-fill" id="progress-fill" style="width:0%"></div></div>
+  </div>
+  <div class="question-card">
+    <div class="q-label" id="q-label">QUESTION 1 / 5</div>
+    <div class="q-text" id="q-text"></div>
+  </div>
+  <div class="choices" id="choices"></div>
+  <div class="result-card" id="result-card">
+    <div class="result-verdict" id="result-verdict"></div>
+    <div class="result-answer" id="result-answer"></div>
+    <div class="result-desc" id="result-desc"></div>
+  </div>
+  <button class="btn-next" id="btn-next" onclick="nextQuestion()">つぎへ →</button>
+</div>
+
+<!-- STAGE RESULT SCREEN -->
+<div id="stage-result-screen" class="screen">
+  <div class="fireworks" id="fireworks"></div>
+  <div class="stage-result-icon" id="result-icon">🏆</div>
+  <div class="stage-result-title" id="stage-result-title">ステージ1 クリア！</div>
+  <div class="praise-text" id="praise-text"></div>
+  <div class="score-cards">
+    <div class="score-card">
+      <div class="score-card-label">このステージ</div>
+      <div><span class="score-card-value" id="stage-score-val">0</span><span class="score-card-denom">/5</span></div>
+    </div>
+    <div class="score-card">
+      <div class="score-card-label">パーフェクト数</div>
+      <div><span class="score-card-value" id="perfect-count">0</span><span class="score-card-denom">回</span></div>
+    </div>
+  </div>
+  <div class="avg-card">
+    <div class="avg-label">平均スコア</div>
+    <div class="avg-value" id="avg-score-val">0.0</div>
+  </div>
+  <button class="btn-primary" id="next-stage-btn" onclick="nextStage()">つぎのステージへ</button>
+</div>
+
+<!-- FINAL SCREEN -->
+<div id="final-screen" class="screen">
+  <div class="fireworks" id="fireworks-final"></div>
+  <div style="font-size:72px; animation: bounce 1s ease infinite alternate;">🎓</div>
+  <div class="stage-result-title">全ステージ制覇！</div>
+  <div class="total-score-ring">
+    <svg width="140" height="140" viewBox="0 0 140 140">
+      <circle cx="70" cy="70" r="58" fill="none" stroke="rgba(255,255,255,0.08)" stroke-width="10"/>
+      <circle cx="70" cy="70" r="58" fill="none" stroke="url(#grad)" stroke-width="10" stroke-linecap="round" stroke-dasharray="364.4" id="final-ring"/>
+    </svg>
+    <defs>
+      <linearGradient id="grad" x1="0%" y1="0%" x2="100%" y2="0%">
+        <stop offset="0%" stop-color="#4a8fe2"/>
+        <stop offset="100%" stop-color="#e2b04a"/>
+      </linearGradient>
+    </defs>
+    <div class="total-score-text">
+      <div class="total-score-num" id="total-score-num">0</div>
+      <div class="total-score-denom">/ 50</div>
+    </div>
+  </div>
+  <div class="final-rank" id="final-rank">🏆 科学博士</div>
+  <div class="praise-text" id="final-praise"></div>
+  <div class="avg-card">
+    <div class="avg-label">全体平均スコア</div>
+    <div class="avg-value" id="final-avg">0.0</div>
+  </div>
+  <button class="btn-primary" onclick="restartGame()">もう一度プレイ</button>
+</div>
+
+<script>
+const quizData = [
+  // ===== STAGE 1 =====
+  {
+    question: "私は万有引力の法則を発見した物理学者です。光学の分野でも重要な業績を残し、プリズムで白色光が様々な色に分解できることを示しました。イギリスのウールスソープで生まれ、ケンブリッジ大学で学びました。王立造幣局長官として偽造貨幣犯罪者の取締りも行いました。",
+    answer: "アイザック・ニュートン",
+    choices: ["ガリレオ・ガリレイ", "アイザック・ニュートン", "ヨハネス・ケプラー", "ロバート・フック"],
+    explanation: "ニュートンは実はリンゴが落ちる話は本人が語った逸話ですが、実際には18年もかけてゆっくりと万有引力の理論を完成させました。また、彼は錬金術にも深く傾倒しており、金属を金に変える研究に膨大な時間を費やしていました。神秘主義的な文書の解読にも熱中し、秘密の暗号解読を生涯追い求めていたのです。晩年は造幣局長として偽造犯を死刑に追い込むほど厳格でした。",
+  },
+  {
+    question: "相対性理論を構築したドイツ生まれの物理学者で、光量子仮説でノーベル物理学賞を受賞しました。チューリッヒ工科大学の入学試験に一度落ちたことでも知られています。アメリカに亡命後、原子爆弾開発への協力を求める手紙にサインしたことを後悔しました。",
+    answer: "アルベルト・アインシュタイン",
+    choices: ["マックス・プランク", "ヴェルナー・ハイゼンベルク", "アルベルト・アインシュタイン", "ニールス・ボーア"],
+    explanation: "アインシュタインは子供の頃、言葉を話すのが遅く、両親は発達に問題があるのではと心配したそうです。また、靴下をはく習慣がなく、裸足でいることを好んでいました。ヴァイオリンが得意で、モーツァルトを愛し、演奏で行き詰まった思考をほぐすことがあったといいます。さらに彼の脳は死後に研究者に無断で取り出され、40年以上にわたって保管されていたという衝撃的な事実があります。",
+  },
+  {
+    question: "放射能の研究でノーベル物理学賞とノーベル化学賞の2つを受賞した唯一の人物です。ポロニウムとラジウムを発見し、「放射能」という言葉を作りました。ポーランド出身で、女性として初めてパリ大学の教授職に就きました。",
+    answer: "マリー・キュリー",
+    choices: ["リーゼ・マイトナー", "ロザリンド・フランクリン", "マリー・キュリー", "イレーヌ・ジョリオ＝キュリー"],
+    explanation: "マリー・キュリーは放射性物質を素手で扱い続けたため、晩年は指先が常に荒れており、再生不良性貧血で亡くなりました。彼女の実験ノートは今でも放射性を帯びており、閲覧には防護服が必要です。興味深いことに、彼女は研究室の引き出しにラジウムを入れたまま、その不思議な青白い発光を夜な夜な眺めて楽しんでいたそうです。科学の美しさと危険さを同時に体現した人物でした。",
+  },
+  {
+    question: "進化論を提唱したイギリスの博物学者で、ビーグル号での世界一周航海でさまざまな生物を観察しました。ガラパゴス諸島のフィンチの多様性が理論形成に大きく影響しました。著書『種の起源』は出版当日に売り切れるほどの話題作でした。",
+    answer: "チャールズ・ダーウィン",
+    choices: ["アルフレッド・ウォレス", "チャールズ・ダーウィン", "トーマス・ハクスリー", "ジャン＝バティスト・ラマルク"],
+    explanation: "ダーウィンは非常に臆病な性格で、進化論の発表を20年以上も先延ばしにしていました。宗教界や社会からの批判を恐れていたのです。また彼はビーグル号の旅で船酔いに苦しみ続け、上陸するたびにほっとしていたといいます。意外なことに彼は甲虫収集マニアで、ケンブリッジ時代に珍しい甲虫を口に入れて運んだところ、虫が分泌液を出して口の中が大変なことになったという笑える逸話も残っています。",
+  },
+  {
+    question: "遺伝の法則を修道院の庭でエンドウ豆を使った交配実験で発見しました。当時その業績は無視され、死後30年以上経ってから再評価されました。オーストリアのモラヴィア地方出身で、アウグスティノ修道会の修道士でした。",
+    answer: "グレゴール・メンデル",
+    choices: ["グレゴール・メンデル", "フランシス・クリック", "トーマス・モーガン", "ヒューゴ・ド・フリース"],
+    explanation: "メンデルは修道院長になってから税金問題で政府と争い、遺伝学研究を完全にやめてしまいました。また、太りすぎを気にして何度もダイエットを試みたが失敗し続けたそうです。彼の遺伝実験は実に8年間、2万8000株以上のエンドウ豆を育てた地道な作業でした。そしてなんと、彼の論文を掲載した学術雑誌の1冊がダーウィンの書棚で発見されましたが、ページが全く切り取られておらず、一度も読まれていなかったことが判明しました。",
+  },
+
+  // ===== STAGE 2 =====
+  {
+    question: "電球や蓄音機など生涯で1000を超える特許を取得したアメリカの発明家です。「天才とは1%のひらめきと99%の努力である」という言葉で知られます。交流電流に反対し、直流電流の普及を推進しました。",
+    answer: "トーマス・エジソン",
+    choices: ["ニコラ・テスラ", "アレクサンダー・グラハム・ベル", "トーマス・エジソン", "ジョージ・ウェスティングハウス"],
+    explanation: "エジソンは実は学校を3か月でやめさせられた経歴の持ち主で、先生から「頭が悪すぎる」と言われた子供でした。また彼は睡眠が非常に少なく、一日に4〜5時間しか寝なかったといいます。交流電流の危険性を世間に知らしめるため、象を感電死させるショーを公開したという衝撃的な行為もしました。ライバルのテスラとの「電流戦争」では、相手の研究を貶めるためにロビー活動を繰り広げるなど、かなりえげつない一面もありました。",
+  },
+  {
+    question: "交流電流システムを発明したセルビア系アメリカ人の科学者です。雷と電気を自在に操るような実験で有名で、無線通信の先駆者でもあります。エジソンの会社で働いた後、独立して研究を進めました。晩年は経済的に困窮し、ホテルで孤独に亡くなりました。",
+    answer: "ニコラ・テスラ",
+    choices: ["ニコラ・テスラ", "ハインリヒ・ヘルツ", "グリエルモ・マルコーニ", "マイケル・ファラデー"],
+    explanation: "テスラは強迫性障害を持ち、物事を3の倍数でしか行わないという奇癖がありました。ホテルの部屋番号が3で割れない場合は別の部屋に替えさせていたほどです。また彼は丸い形のものが嫌いで、女性のイヤリングさえも近くにあると気分が悪くなったといいます。ハトを深く愛し、特に一羽の白いメスのハトを「最愛の存在」と語っていました。そのハトが死んだとき「私の生きる意味が消えた」とまで言ったそうです。",
+  },
+  {
+    question: "ペニシリンを発見したスコットランドの細菌学者です。実験室のカビがブドウ球菌を死滅させることを偶然観察し、世界初の抗生物質を発見しました。この発見は何百万人もの命を救い、1945年にノーベル生理学・医学賞を受賞しました。",
+    answer: "アレクサンダー・フレミング",
+    choices: ["ルイ・パスツール", "ロベルト・コッホ", "アレクサンダー・フレミング", "ジョセフ・リスター"],
+    explanation: "フレミングのペニシリン発見は、夏休み前に培養皿を片付けずに実験室を離れた「ずぼらさ」が生んだ偶然でした。休暇から戻ったら培養皿にカビが生えていたのです。彼は細菌を使って美しい絵を描く「細菌画家」としても知られ、バレリーナや家などを細菌で描いた作品を友人に贈っていました。また彼は「汚れた実験室」主義者で、整理整頓より「何かが偶然起こるかもしれない」という期待を持ち続けていたそうです。",
+  },
+  {
+    question: "元素の周期律を発見し、周期表を作成したロシアの化学者です。当時まだ発見されていない元素の性質をいくつも正確に予測しました。ドイツ留学中にカードゲームをしながら元素の分類を思いついたと言われています。",
+    answer: "ドミトリ・メンデレーエフ",
+    choices: ["アントワーヌ・ラボアジェ", "ドミトリ・メンデレーエフ", "ハンフリー・デービー", "ジョン・ドルトン"],
+    explanation: "メンデレーエフは年に一度しか髪を切らないという奇妙な習慣を持っており、長いもじゃもじゃの髪と長いひげがトレードマークでした。床屋の勧めにも頑としてきかなかったそうです。また彼は二度目の妻と結婚するため、まだ前妻と離婚していない状態で結婚式を挙げたため、重婚罪に問われかけましたが、皇帝のおとがめはなかったといいます。周期表のアイデアは夢の中で降りてきたと自ら語っています。",
+  },
+  {
+    question: "太陽中心説（地動説）を唱えたポーランドの天文学者で、長年の観測と計算をもとに宇宙の中心は太陽であると主張しました。その主著『天球の回転について』は死の直前に出版されました。カトリック教会の司祭も兼ねていました。",
+    answer: "ニコラウス・コペルニクス",
+    choices: ["ティコ・ブラーエ", "ニコラウス・コペルニクス", "ガリレオ・ガリレイ", "ジョルダーノ・ブルーノ"],
+    explanation: "コペルニクスは地動説の本の出版を生涯にわたって躊躇し続け、完成から実に36年後にようやく出版を決意しました。教会からの非難を恐れていたからです。伝説によれば、印刷されたばかりの本が彼の手元に届いたのは死の当日か翌日であり、彼は本に触れた直後に息を引き取ったといわれています。また、彼は医師・法律家・経済学者でもあり、貨幣改革の論文まで書いたスーパーマルチプレーヤーでした。",
+  },
+
+  // ===== STAGE 3 =====
+  {
+    question: "ガリレオの弟子であり、微分積分学の基礎を独自に発展させたドイツの数学者・哲学者です。「この世界は可能な世界の中で最善の世界だ」という楽観主義で有名です。単子論（モナドロジー）を提唱し、二進法の体系も整備しました。",
+    answer: "ゴットフリート・ライプニッツ",
+    choices: ["ルネ・デカルト", "ゴットフリート・ライプニッツ", "ブレーズ・パスカル", "クリスティアーン・ホイヘンス"],
+    explanation: "ライプニッツはニュートンと「微分積分学を誰が先に発見したか」をめぐって生涯激しく争いました。実際には二人がほぼ独立に発見したのですが、ライプニッツは晩年、この論争に心を砕いて孤独に亡くなりました。葬儀には秘書一人しか出席しなかったと伝えられています。また彼は究極の計算機械を夢想し、加算機の試作品を作ったこともありますが、完成には至りませんでした。哲学者・数学者・外交官・図書館司書まで兼ねた驚異的な人物でした。",
+  },
+  {
+    question: "天然痘ワクチンを開発したイギリスの医師で、乳搾りの女性が天然痘にかかりにくいことに気づき、牛痘を使った予防接種を考案しました。この発見は近代免疫学の礎となり、天然痘の根絶に貢献しました。",
+    answer: "エドワード・ジェンナー",
+    choices: ["エドワード・ジェンナー", "ルイ・パスツール", "ロベルト・コッホ", "ジョン・スノウ"],
+    explanation: "ジェンナーは最初、牛痘を8歳の少年に注射するという今では考えられない人体実験を行いました。その少年はジェームズ・フィップスといい、後に健康に成長したそうです。ジェンナーはまた、カッコウの習性を初めて科学的に観察・報告した鳥類研究者でもありました。カッコウのヒナが巣の中の卵を捨てる行動を記録したのです。「ワクチン」という言葉はラテン語で牛を意味する「vacca」に由来し、ジェンナーが名付けました。",
+  },
+  {
+    question: "光の波動性と粒子性の二重スリット実験を行ったイギリスの物理学者で、ロゼッタストーンの解読にも貢献しました。眼科医としても活躍し、視覚や色覚の研究で重要な業績を残しました。「弾性」を表すヤング率にその名が残ります。",
+    answer: "トーマス・ヤング",
+    choices: ["トーマス・ヤング", "フレネル", "クリスティアーン・ホイヘンス", "アウグスタン＝ジャン・フレネル"],
+    explanation: "トーマス・ヤングは2歳で本が読め、14歳までにラテン語・ギリシャ語・ヘブライ語など13の言語を習得したという驚異的な天才でした。医師・物理学者・エジプト学者を同時にこなし、「最後の万能人」とも呼ばれます。ロゼッタストーン解読の功績はシャンポリオンに奪われた形になり、ヤング本人はかなり悔しがったといわれています。彼の色覚理論は死後100年以上経ってからヘルムホルツによって証明されました。",
+  },
+  {
+    question: "細菌学の父と呼ばれるドイツの医師で、炭疽菌・結核菌・コレラ菌などを次々と発見しました。細菌を培養するための寒天培地の使用法を確立し、感染症研究の方法論を革命的に変えました。1905年にノーベル生理学・医学賞を受賞しました。",
+    answer: "ロベルト・コッホ",
+    choices: ["ルイ・パスツール", "ロベルト・コッホ", "ジョン・スノウ", "エミール・フォン・ベーリング"],
+    explanation: "コッホとパスツールは細菌学の先駆者として激しいライバル関係にありました。フランス人のパスツールとドイツ人のコッホはお互いを論文で批判しあい、普仏戦争後の国民感情もあって、その対立は個人を超えた国家間の争いの様相を呈していました。コッホは結核菌を発見した際、授業の合間に顕微鏡で観察し続けた開業医時代に偉業を成し遂げました。また晩年、自分の結核治療薬として発表したツベルクリンが失敗に終わり、大きな批判を受けました。",
+  },
+  {
+    question: "電磁誘導の法則を発見したイギリスの化学者・物理学者です。貧しい鍛冶屋の家に生まれ、14歳から本屋・製本屋で働きながら独学で科学を学びました。電気モーターや発電機の原理を実験的に実証しました。",
+    answer: "マイケル・ファラデー",
+    choices: ["ジェームズ・クラーク・マクスウェル", "マイケル・ファラデー", "ウィリアム・トムソン", "オーム"],
+    explanation: "ファラデーは数学が苦手だったため、電磁場を数式でなく「力線」というビジュアルなイメージで説明しました。このアイデアが後にマクスウェル方程式の基礎になります。科学者として大成功を収めた後、イギリス政府から騎士号を授けると提案されましたが、質素な生活を好む信仰上の理由から固辞しました。また彼は非常にカリスマ的な講演者で、子ども向けのクリスマス講演「ろうそくの科学」は今も毎年王立研究所で続く伝統になっています。",
+  },
+
+  // ===== STAGE 4 =====
+  {
+    question: "核分裂を理論的に説明したオーストリア系スウェーデンの物理学者で、女性として初めて核分裂の概念を明確にしました。ナチス・ドイツからスウェーデンに亡命し、生涯にわたって核兵器への利用に反対しました。元素番号109のマイトネリウムに名前が冠されています。",
+    answer: "リーゼ・マイトナー",
+    choices: ["リーゼ・マイトナー", "アイリーン・ジョリオ＝キュリー", "チェン＝シオン・ウー", "マリー・キュリー"],
+    explanation: "マイトナーは核分裂の発見に決定的な貢献をしたにもかかわらず、1944年のノーベル化学賞は共同研究者のオットー・ハーンのみに授与されました。この「科学史上最大の不公平」と呼ばれる出来事は今も語り継がれています。彼女はヒトラーを逃れてわずかな荷物だけでベルリンを脱出した際、ダイヤモンドの指輪でスウェーデンへの旅費を確保したといわれています。90歳を超えてもピクニックや山歩きを楽しんでいた長寿の科学者でもありました。",
+  },
+  {
+    question: "DNAの二重らせん構造をX線回折データから解明したイギリスの物理化学者です。その結晶学的データはクリックとワトソンの発見に不可欠でしたが、彼女への適切な評価は長らくなされませんでした。34歳の若さで卵巣がんで亡くなりました。",
+    answer: "ロザリンド・フランクリン",
+    choices: ["ロザリンド・フランクリン", "ドロシー・ホジキン", "バーバラ・マクリントック", "リタ・レビ＝モンタルチーニ"],
+    explanation: "フランクリンが撮影した「フォト51」と呼ばれるX線写真は、DNAの二重らせん構造解明に決定的でした。しかし彼女の許可なくこの写真がワトソンに見せられ、ノーベル賞はワトソン、クリック、ウィルキンスの三人に贈られました。彼女はノーベル賞発表の4年前に亡くなっており、存命であっても賞が贈られたかは疑問視されています。彼女はコールタールの発がん性研究でも業績を残し、科学界ではがんを研究しながら自らがんで命を落とすという皮肉な運命を辿りました。",
+  },
+  {
+    question: "量子力学の不確定性原理を提唱したドイツの物理学者です。25歳でノーベル物理学賞を受賞し、史上最年少クラスの受賞者の一人です。第二次世界大戦中はドイツの核兵器開発計画に関わりましたが、成功させなかったと主張しました。",
+    answer: "ヴェルナー・ハイゼンベルク",
+    choices: ["エルヴィン・シュレーディンガー", "ヴェルナー・ハイゼンベルク", "ポール・ディラック", "ヴォルフガング・パウリ"],
+    explanation: "ハイゼンベルクは博士論文の口頭試問でほぼ落第しかけたという逸話があります。実験物理学の基礎的な質問に答えられず、審査委員の一人から「この学生は物理の基礎を知らない」と猛批判されました。量子力学という革命的な理論を作った人物が実験の基礎を知らないとは何とも皮肉です。また彼はナチス時代にドイツに留まり、核開発に関わったため、戦後は「裏切り者」と「英雄」の両方の評価を受けるという複雑な立場に置かれました。",
+  },
+  {
+    question: "近代化学の父と呼ばれるフランスの化学者で、燃焼が酸素との反応であることを解明し、質量保存の法則を確立しました。酸素・窒素・水素などの元素に現代的な名前をつけました。フランス革命で処刑された悲劇の科学者でもあります。",
+    answer: "アントワーヌ・ラボアジェ",
+    choices: ["アントワーヌ・ラボアジェ", "ジョセフ・プリーストリー", "カール・シェーレ", "ジョン・ドルトン"],
+    explanation: "ラボアジェは革命政府から「科学はフランス共和国に必要ない」と言われ、断頭台で処刑されました。彼の死について数学者のラグランジュは「その首を落とすのに一瞬で十分だったが、彼のような頭脳が再び現れるには百年かかるだろう」と嘆いたと伝わります。処刑から僅か18ヶ月後に彼の無罪が宣言され、妻のマリー＝アンヌは夫の遺した研究を整理・出版し続けました。彼の妻もまた優れた化学者であり、ラボアジェの研究を陰で支えたパートナーでした。",
+  },
+  {
+    question: "光合成の化学反応回路（カルビン回路）を解明したアメリカの化学者です。放射性炭素14を使って植物が二酸化炭素を有機物に変換する過程を追跡し、1961年にノーベル化学賞を受賞しました。バークレー大学で長年研究を続けました。",
+    answer: "メルビン・カルビン",
+    choices: ["メルビン・カルビン", "ジャガディッシュ・チャンドラ・ボース", "オットー・ワールブルク", "ハンス・クレブス"],
+    explanation: "カルビンは自動車の改造が趣味で、自分の車の排気ガスを減らすための触媒を自作しようとするエンジニア的な一面も持っていました。また彼は非常に早口で有名で、講演中に学生が内容を理解できないほどのスピードで話したといいます。研究室ではいつも葉巻を吸いながら実験の指示を出していたそうです。放射性炭素14を使った追跡実験は当時最先端の技術で、放射性同位体を科学研究に本格活用した先駆者の一人でもあります。",
+  },
+
+  // ===== STAGE 5 =====
+  {
+    question: "電話を発明したとされるスコットランド系アメリカ人の発明家で、もともとは聴覚障害を持つ人々へのコミュニケーション支援を研究していました。発明の特許申請をライバルより数時間早く提出したことで知られます。",
+    answer: "アレクサンダー・グラハム・ベル",
+    choices: ["アレクサンダー・グラハム・ベル", "エリシャ・グレイ", "アントニオ・メウッチ", "トーマス・エジソン"],
+    explanation: "ベルは電話を発明しながら、自分の家には電話機を置かなかったという逸話が有名です。「仕事の邪魔になる」というのがその理由でした。彼はまた飛行機の研究にも情熱を注ぎ、初飛行後のライト兄弟に刺激を受けて自ら航空機を設計しました。さらに彼の名前がついた「ベル」という音の単位は今も広く使われています。母と妻がともに聴覚障害者だったことが、聴覚と音声の研究への情熱の源泉となったと彼自身が語っています。",
+  },
+  {
+    question: "熱力学の第二法則とエントロピーの概念を確立したドイツの物理学者です。「熱は自然には低温から高温へは流れない」という原理を数学的に定式化しました。エントロピーという言葉を作り出した本人でもあります。",
+    answer: "ルドルフ・クラウジウス",
+    choices: ["ルドルフ・クラウジウス", "ジェームズ・プレスコット・ジュール", "ウィリアム・トムソン", "ニコラ・カルノー"],
+    explanation: "クラウジウスは普仏戦争の際に民間救護隊を自ら組織し、負傷兵の手当てを行いました。この活動で負傷し、後遺症に長年悩まされました。彼は学術的な論争を好み、ジュールやケルビンなど当時の物理学者たちと激しい優先権争いを繰り広げました。熱力学を研究した人物が自分の人生においても「エネルギーは常に散逸していく」という法則を体現するような激動の人生を送ったのは何とも示唆的です。",
+  },
+  {
+    question: "パスタ製造業者の家に生まれたイタリア出身のアメリカ人物理学者で、「原子炉の父」と呼ばれます。シカゴ大学スタジアム地下で世界初の核連鎖反応を実現しました。1938年にノーベル物理学賞を受賞後、ファシスト政権から逃れるため渡米しました。",
+    answer: "エンリコ・フェルミ",
+    choices: ["エンリコ・フェルミ", "オッペンハイマー", "エドワード・テラー", "ハンス・ベーテ"],
+    explanation: "フェルミは頭の中で複雑な計算を素早く行う「フェルミ推定」で有名でした。ニューメキシコ州のトリニティ核実験の瞬間、爆風の中に紙切れを落として爆発のエネルギーを概算してみせたという伝説的なエピソードがあります。また、彼は授業中に学生が間違った答えを言うと「NO！NO！NO！」と連発して首を振り続けるクセがあり、学生たちから恐れられていました。「フェルミのパラドックス」として知られる「宇宙人はなぜ地球に来ないのか」という問いも彼の名を冠しています。",
+  },
+  {
+    question: "量子力学の基本方程式であるシュレーディンガー方程式を導いたオーストリアの物理学者です。「シュレーディンガーの猫」という思考実験で量子論の奇妙さを示しました。1933年にノーベル物理学賞を受賞しました。",
+    answer: "エルヴィン・シュレーディンガー",
+    choices: ["エルヴィン・シュレーディンガー", "ヴェルナー・ハイゼンベルク", "ポール・ディラック", "マックス・ボルン"],
+    explanation: "シュレーディンガーの猫の思考実験は、量子論の「重ね合わせ状態」への批判として考案したものでしたが、むしろ量子論の奇妙さを説明する代名詞になってしまいました。彼は生物学にも深い関心を持ち、著書「生命とは何か？」でDNAの存在を予言するような記述をしており、フランシス・クリックがこの本に触発されてDNA研究に転向したと語っています。またシュレーディンガーは非常に多くの女性と関係を持ちノーベル賞授賞式に妻と愛人を連れて出席したという破天荒な話も伝わっています。",
+  },
+  {
+    question: "行動主義心理学の基礎を築いたロシアの生理学者です。犬の消化実験中に条件反射という現象を発見し、学習の神経生理学的基盤を解明しました。1904年にノーベル生理学・医学賞を受賞した、心理学に最も影響を与えた科学者の一人です。",
+    answer: "イワン・パブロフ",
+    choices: ["イワン・パブロフ", "ジョン・ワトソン", "バラス・スキナー", "ウィルヘルム・ヴント"],
+    explanation: "パブロフは政治的な発言を恐れない人物で、ソ連政権に対しても公然と批判的な手紙を送り続けました。スターリン時代にこれをやった科学者は彼くらいのものだったといいます。また彼は研究室で犬たちに名前をつけ非常に愛着を持っており、実験後は必ず犬たちの世話をさせていました。時間にも非常に正確で、研究室の助手は彼が廊下を歩く足音で時計を合わせられたといいます。「条件反射」という言葉は彼が意図せず心理学の用語として世界中に広まりました。",
+  },
+
+  // ===== STAGE 6 =====
+  {
+    question: "宇宙背景放射の理論的予測や元素の起源を研究したロシア系アメリカ人の物理学者で、ビッグバン理論の普及に貢献しました。科学啓発書の執筆でも知られ、「ミスター・トンプキンス」シリーズなど多くの科学読み物を著しました。",
+    answer: "ジョージ・ガモフ",
+    choices: ["ジョージ・ガモフ", "フレッド・ホイル", "ロジャー・ペンローズ", "スティーヴン・ワインバーグ"],
+    explanation: "ガモフはユーモアのセンスが抜群で、重力崩壊の論文著者にアルファ・ベーテ・ガモフと名前を並べるため、友人のハンス・ベーテを無理やり共著者に加えました（アルファはアルファー、ベーテはβ、ガモフはγに対応）。またガモフはソ連から亡命を試みた際、カヌーで黒海を渡ってトルコへ脱出しようとして嵐で失敗したという冒険談も持っています。絵も上手で、自分の著書のイラストを自ら描いていました。",
+  },
+  {
+    question: "血液の循環系を解明したイギリスの医師で、心臓が血液を全身に送り出すポンプの役割を果たしていることを証明しました。当時の医学界の常識を覆したこの発見は激しい批判を受けましたが、実験と観察で理論を証明しました。",
+    answer: "ウィリアム・ハーヴェイ",
+    choices: ["ウィリアム・ハーヴェイ", "ガレノス", "アンドレアス・ヴェサリウス", "マルチェッロ・マルピーギ"],
+    explanation: "ハーヴェイは血液循環の理論を発表した後、患者が激減したという逸話があります。「その先生は頭がおかしい」と思われたからだそうです。彼は実験好きが高じて自分の患者の解剖を行ったり、ノミやシラミまで観察したりしていました。またハーヴェイはチャールズ1世の侍医を務め、国王が王権神授説を信じるなか、ハーヴェイだけは「心臓は神秘的な臓器ではなくポンプに過ぎない」と言い続けた合理主義者でした。",
+  },
+  {
+    question: "脳の神経細胞の詳細な構造を描写し「ニューロン説」を確立したスペインの神経学者です。光学顕微鏡を用いてニューロンの細部を描いた精緻なスケッチで知られます。1906年にノーベル生理学・医学賞を受賞しました。",
+    answer: "サンティアゴ・ラモン・イ・カハール",
+    choices: ["サンティアゴ・ラモン・イ・カハール", "カミッロ・ゴルジ", "シャルル・シェリントン", "ヴィルヘルム・フォン・ワルダイアー"],
+    explanation: "カハールは若い頃に画家を夢見ており、神経細胞の精密なスケッチは芸術的な美しさでも称賛されています。実際、彼が描いた神経細胞のイラストは今日でも教科書に使われるほどの傑作です。彼はまた、強烈な意志力でバルセロナの衰退した科学環境を変えようと孤独に戦い続けました。ノーベル賞の同年受賞者ゴルジとは学説上の対立があり、授賞式のスピーチでもお互いを批判し合うという珍事が起きました。",
+  },
+  {
+    question: "地殻変動の大陸移動説を提唱したドイツの気象学者で、各大陸の海岸線が一致することや化石分布の類似性から、かつてパンゲアという超大陸が存在したと主張しました。当初はほぼ全ての地質学者から嘲笑されましたが、後に正しいことが証明されました。",
+    answer: "アルフレート・ウェゲナー",
+    choices: ["アルフレート・ウェゲナー", "チャールズ・ライエル", "エドワード・スエス", "アーサー・ホームズ"],
+    explanation: "ウェゲナーは地質学者でも地球物理学者でもなく気象学者だったため、「専門外の人間が何を言う」と当時の学者たちから徹底的に馬鹿にされました。大陸が動く「メカニズム」を説明できなかったのも弱点でした。彼はグリーンランドの気象観測中に50歳で遭難死し、翌年に遺体が発見されました。彼の理論が本格的に認められたのは死後30年以上経って、海底拡大説が発見されてからのことでした。",
+  },
+  {
+    question: "光電効果の量子論的解釈でノーベル賞を受賞した理論物理学者でありながら、量子力学の解釈をめぐってボーアと論争しました。また、EPRパラドックスを提唱し、量子もつれの問題を世に示しました。「神はサイコロを振らない」という言葉でも有名です。",
+    answer: "アルベルト・アインシュタイン",
+    choices: ["アルベルト・アインシュタイン", "ニールス・ボーア", "マックス・ボルン", "ルイ・ド・ブロイ"],
+    explanation: "アインシュタインは1933年に渡米した際、プリンストン高等研究所に着任しました。その際の初日、秘書から「机や文房具に何が必要ですか」と聞かれ、「大きめのゴミ箱が一つ。計算の間違いを捨てるためだけにね」と答えたという逸話があります。彼は音楽仲間と室内楽を楽しむことを生涯の喜びとし、自分のヴァイオリン演奏について「あまり上手ではないが、情熱は誰にも負けない」と自己評価していました。",
+  },
+
+  // ===== STAGE 7 =====
+  {
+    question: "細胞分裂でトウモロコシの染色体を研究し、遺伝子が染色体上の特定位置に固定されていないことを発見した（「転移因子」の発見）アメリカの遺伝学者です。1983年にノーベル生理学・医学賞を受賞しました。発見から30年以上後のことでした。",
+    answer: "バーバラ・マクリントック",
+    choices: ["バーバラ・マクリントック", "アグネス・ファン", "ロザリンド・フランクリン", "ノリ・ターカー"],
+    explanation: "マクリントックの転移因子（トランスポゾン）の発見は、あまりにも時代を先取りしていたため同僚から「狂った人」扱いをされ、長年無視されました。それでも彼女は孤独にトウモロコシ畑で研究を続け、81歳でノーベル賞を受賞しました。彼女は畑のトウモロコシ一本一本に名前をつけ、「それぞれの個性がある」と語っていたほど植物に深い愛情を持っていました。結婚せず生涯を研究に捧げ、90歳を超えて亡くなる直前まで現役科学者でした。",
+  },
+  {
+    question: "「種の起源」を書いたイギリスの博物学者と同時期に、独立に自然選択説を考案したウォレス線で有名なイギリスの博物学者です。マレー諸島での生物観察が理論の基礎になりました。彼の手紙がダーウィンを「種の起源」出版に踏み切らせたとされています。",
+    answer: "アルフレッド・ウォレス",
+    choices: ["アルフレッド・ウォレス", "チャールズ・ダーウィン", "ジョセフ・フッカー", "トーマス・ハクスリー"],
+    explanation: "ウォレスはマレー諸島で熱帯熱マラリアにかかり高熱でうなされながら、自然選択のアイデアを二時間で構想したといわれています。その草稿をダーウィンに送ったところ、ダーウィンは自分のアイデアと全く同じであることに驚愕しました。晩年のウォレスは心霊術を信じるようになり、死者との交信に傾倒したため、科学者仲間から白い目で見られるようになりました。しかし彼は「自然科学が説明できないことを研究している」とまったく気にしなかったそうです。",
+  },
+  {
+    question: "インドの数学者で、正式な数学教育をほとんど受けていないにもかかわらず、数論の分野で驚異的な発見をし続けた天才です。ケンブリッジのハーディ教授に手紙を送ったことで世界に知られるようになりました。32歳で夭逝しました。",
+    answer: "スリニヴァーサ・ラマヌジャン",
+    choices: ["スリニヴァーサ・ラマヌジャン", "マダヴァ", "シャクンタラ・デヴィ", "ブラーマグプタ"],
+    explanation: "ラマヌジャンは女神ナマギリが夢に現れて数式を教えてくれると語っており、インスピレーションの源を神に求めていました。ハーディ教授が病院に見舞いに来た際「タクシーの番号が1729でしたよ」と言うと、ラマヌジャンは即座に「1729は二つの立方数の和として二通りに表せる最小の数ですね」と答えたという逸話は今でも伝説的です。彼は菜食主義でイギリスの気候と食事に馴染めず、栄養失調と結核で若くして亡くなりました。",
+  },
+  {
+    question: "プリンストン大学でフィールズ賞を受賞した数学者で、ゲーム理論への貢献でノーベル経済学賞も受賞しました。統合失調症との闘いをドラマチックに描いた伝記映画「ビューティフル・マインド」のモデルとなった人物です。",
+    answer: "ジョン・ナッシュ",
+    choices: ["ジョン・ナッシュ", "ノーバート・ウィーナー", "クロード・シャノン", "ジョン・フォン・ノイマン"],
+    explanation: "ナッシュはプリンストンでの学生時代、廊下の窓ガラスに数式を書き続けるという奇行で有名でした。「幽霊数学者」とも呼ばれていたそうです。30年以上にわたる統合失調症との闘いの末、1994年にノーベル賞を受賞し奇跡の復活を遂げました。しかし悲劇は続き、ナッシュとその妻アリシアは2015年にノルウェーからの帰国直後、タクシー事故でともに亡くなりました。ノーベル賞授賞式のわずか数日後のことでした。",
+  },
+  {
+    question: "コンピュータサイエンスの基礎を築き、第二次世界大戦中にエニグマ暗号の解読に貢献したイギリスの数学者です。人工知能の概念を提唱し、その判定法として「チューリングテスト」を考案しました。コンピュータの父と呼ばれています。",
+    answer: "アラン・チューリング",
+    choices: ["アラン・チューリング", "クロード・シャノン", "ジョン・フォン・ノイマン", "ノーバート・ウィーナー"],
+    explanation: "チューリングは同性愛者であることが発覚し、1952年に当時のイギリスの法律で有罪となりました。化学的去勢という非人道的な刑罰を受け、1954年に青酸を注入したリンゴを食べて亡くなりました（自殺とも事故とも言われています）。2013年にエリザベス女王から正式に恩赦が与えられました。アップル社のリンゴのロゴがチューリングの死に敬意を表しているという説がありますが、公式には否定されています。",
+  },
+
+  // ===== STAGE 8 =====
+  {
+    question: "光速度一定の原理を導き、特殊相対性理論の理論的枠組みに貢献したフランスの数学者・物理学者です。トポロジーや微分方程式の分野でも重要な業績を残しました。「科学と仮説」など科学哲学の著作でも著名です。",
+    answer: "アンリ・ポアンカレ",
+    choices: ["アンリ・ポアンカレ", "ポール・ランジュバン", "ピエール・キュリー", "マルセル・ブリロアン"],
+    explanation: "ポアンカレは記憶力が恐ろしくよく、本を一度読めば内容を全て記憶できたといわれています。しかし皮肉なことに、チェスのルールは何度教わっても覚えられなかったそうです。また彼は「無意識の創造力」を信じており、問題を必死に考えた後でいったん完全に忘れて散歩しているときに突然解法が降りてくる、という体験を何度も報告しています。馬車に乗ろうとした瞬間に自分の数学的発見の正しさを確信した、という有名な逸話があります。",
+  },
+  {
+    question: "中性子星の存在とブラックホール形成の理論を予測したインド系アメリカ人の天体物理学者です。「チャンドラセカール限界」として知られる白色矮星の質量限界を計算し、1983年にノーベル物理学賞を受賞しました。",
+    answer: "スブラマニアン・チャンドラセカール",
+    choices: ["スブラマニアン・チャンドラセカール", "アーサー・エディントン", "フリッツ・ツビッキー", "ヤン・オールト"],
+    explanation: "チャンドラセカールは19歳でイギリス行きの船の中でチャンドラセカール限界を計算しました。ところが当時の大御所天文学者アーサー・エディントンに「若造の計算など信用できない」と公衆の面前でこき下ろされ、イギリスの科学界を去ることになりました。彼がノーベル賞を受賞したのはその発見から50年後のことです。シカゴ大学では学生のために片道320km以上の距離を毎週車で通って講義を続けたという献身的なエピソードもあります。",
+  },
+  {
+    question: "パソコンの原型となったシステムを設計し、ゲーム理論や量子力学、コンピュータ科学など多分野で革命的業績を残したハンガリー系アメリカ人の数学者です。マンハッタン計画にも参加しました。「フォン・ノイマン型コンピュータ」にその名が残ります。",
+    answer: "ジョン・フォン・ノイマン",
+    choices: ["ジョン・フォン・ノイマン", "アラン・チューリング", "クロード・シャノン", "ノーバート・ウィーナー"],
+    explanation: "フォン・ノイマンは人間離れした暗算能力の持ち主で、複雑な計算を瞬時に行えたため、初期のコンピュータとどちらが速いかを競わせるショーが行われたほどです。パーティー好きで自宅を頻繁に開放し、深夜まで騒々しい宴会を開いていました。そのため隣人から何度も苦情が来たといいます。彼はまた猛スピードで運転することでも有名で、運転中の事故を何度も起こしており、あるカーブは「フォン・ノイマン・コーナー」と呼ばれていたそうです。",
+  },
+  {
+    question: "宇宙の膨張を観測的に証明したアメリカの天文学者で、銀河が互いに遠ざかっていることを示す「ハッブルの法則」を発見しました。かつては銀河系が宇宙の全てだと思われていた常識を覆した人物です。",
+    answer: "エドウィン・ハッブル",
+    choices: ["エドウィン・ハッブル", "ヴェスト・スライファー", "ミルトン・ヒューメイソン", "ヘンリエッタ・リービット"],
+    explanation: "ハッブルはもともと法律家を目指して弁護士資格を取得していましたが、父の死後、夢を追って天文学に転向しました。彼はイギリス留学の経験からイギリス風のアクセントを気取るようになり、実際にはミズーリ出身なのに「イギリス人のような話し方」と同僚に評されていたそうです。ノーベル賞が天文学者には贈られない時代に活躍したため受賞できませんでしたが、委員会が天文学を対象に加えると決定した直後の1953年に亡くなりました。",
+  },
+  {
+    question: "自閉スペクトラム症の子供たちの特徴的な症状を初めて詳細に記述したオーストリア生まれの小児科医です。「カナー症候群」とは別に独自に自閉症を研究し、その名を冠した「アスペルガー症候群」で知られています。",
+    answer: "ハンス・アスペルガー",
+    choices: ["ハンス・アスペルガー", "レオ・カナー", "ブルーノ・ベッテルハイム", "エウゲン・ブロイラー"],
+    explanation: "アスペルガーは自分が研究した子供たちを「小さな教授たち」と呼び、彼らの独特の能力を肯定的に評価した先駆的な立場をとりました。彼自身もアスペルガー症候群の特性を持っていたと後の研究者たちは指摘しています。研究対象にした子供たちの中に天才的な数学的能力を持つ子がいるなど、障害ではなく「多様性」として捉えようとした視点は今日の神経多様性という概念の先駆けでした。ただし近年、ナチス時代の政策への関与の疑いも指摘されており、評価は複雑化しています。",
+  },
+
+  // ===== STAGE 9 =====
+  {
+    question: "運動の三法則と万有引力を数学的に記述した大著「プリンキピア」を著し、古典力学を完成させた物理学者です。ケンブリッジのルーカス数学教授職を務め、王立学会会長も歴任しました。生涯独身でした。",
+    answer: "アイザック・ニュートン",
+    choices: ["アイザック・ニュートン", "ロバート・フック", "エドモンド・ハレー", "クリストファー・レン"],
+    explanation: "ニュートンが「プリンキピア」を出版できたのは、天文学者ハレー（ハレー彗星の発見者）が費用を全額負担し、出版を強引に促したからです。実はニュートンはライバルのフックに先取権を奪われることを恐れて発表を渋っていました。また、ニュートンは議会議員を一度だけ務めましたが、在任中に発言した言葉はただひとつ「窓を閉めてください、寒いので」だったという逸話があります。これが本当なら政治家としては史上最も無口な人物の一人でしょう。",
+  },
+  {
+    question: "南米の熱帯植物を大量に収集・分類したプロイセン（ドイツ）の博物学者・地理学者で、近代地理学の基礎を作りました。「コスモス」という著作で自然の統一的理解を試みました。当時最も有名な科学者の一人でした。",
+    answer: "アレクサンダー・フォン・フンボルト",
+    choices: ["アレクサンダー・フォン・フンボルト", "カール・リンネ", "ジョルジュ・キュヴィエ", "アレクサンダー・ウィルソン"],
+    explanation: "フンボルトは南米探検中に電気ウナギに自ら触れてその放電量を計測しようとしました。そのためにわざと馬を水の中に入れ、電気ウナギが疲れたところで素手で触るという命がけの実験を行いました。また、アンデス山脈のチンボラソ山（当時世界最高峰と思われていた）を頂上付近まで登り、高山病に苦しみながら植物と気温の関係を観察し続けました。90歳近くまで精力的に著述活動を続け、亡くなった時には1億5000万円相当の印税が銀行口座に眠っていたそうです。",
+  },
+  {
+    question: "光の速度を測定するマイケルソン＝モーリーの実験を行ったアメリカの物理学者で、エーテルの存在を否定する結果を示し、後の相対性理論に道を開きました。アメリカ人初のノーベル物理学賞受賞者です。",
+    answer: "アルバート・マイケルソン",
+    choices: ["アルバート・マイケルソン", "ヘンリー・ローランド", "エドワード・モーリー", "レイリー卿"],
+    explanation: "マイケルソンは海軍士官出身という異色の経歴の持ち主でした。精密測定への異常なまでのこだわりを持ち、晩年には直径1.6kmを超える巨大な実験装置を建設して光速を測定しました。また彼は芸術的な才能も持ち、水彩画を趣味としていました。自分の実験が「エーテルが存在しない」という革命的な結論を支持するとわかっても、エーテル理論にこだわり続けた保守的な面もありました。科学を変えながら旧い世界観を手放せなかったという矛盾を抱えた人物です。",
+  },
+  {
+    question: "太陽系の運動を記述する三つの法則（ケプラーの法則）を発見したドイツの天文学者です。惑星が楕円軌道を描くことを示し、ニュートンの万有引力の法則の先駆となりました。占星術師としても働いていました。",
+    answer: "ヨハネス・ケプラー",
+    choices: ["ヨハネス・ケプラー", "ティコ・ブラーエ", "ガリレオ・ガリレイ", "ニコラウス・コペルニクス"],
+    explanation: "ケプラーは母親が魔女裁判にかけられたとき、法律の専門家でもないのに自ら弁護書を書いて送り、数年かかって無罪を勝ち取りました。彼自身も子供の頃から病弱で、天然痘で視力が著しく低下しており、「近眼の天文学者」という皮肉な状況でした。また、彼は世界初のSF小説ともいわれる「夢」という作品を書き、月への旅を想像した先駆的な科学文学者でもありました。科学・法律・文学を渡り歩いたルネサンス的な人物でした。",
+  },
+  {
+    question: "ブラックホールの情報パラドックスと放射（ホーキング放射）を理論的に提唱したイギリスの理論物理学者です。21歳でALSと診断され、車椅子と音声合成装置で研究を続けました。「ホーキング、宇宙を語る」はベストセラーになりました。",
+    answer: "スティーヴン・ホーキング",
+    choices: ["スティーヴン・ホーキング", "ロジャー・ペンローズ", "キップ・ソーン", "ジョン・ウィーラー"],
+    explanation: "ホーキングは医師から「2年しか生きられない」と宣告されたにもかかわらず55年以上を生き抜きました。彼は自分の音声合成装置の声（あのロボット風の声）を非常に気に入っており、より自然な声に変える提案を何度も断ったそうです。「あれが私の声だ」と言って。ホーキングはユーモアたっぷりの人物で、スター・トレックに本人役で出演したり、車椅子を猛スピードで走らせて人の足を轢くことに喜びを感じていたと語るなど、重病に負けない明るさで周囲を驚かせ続けました。",
+  },
+
+  // ===== STAGE 10 =====
+  {
+    question: "タンパク質の結晶構造をX線回折で解析し、インスリンの構造を決定したイギリスの化学者です。1964年にノーベル化学賞を受賞し、後にビタミンB12やペニシリンの構造解明でも貢献しました。女性初のノーベル化学賞受賞者の一人です。",
+    answer: "ドロシー・ホジキン",
+    choices: ["ドロシー・ホジキン", "ロザリンド・フランクリン", "マリー・キュリー", "アダ・ヨナス"],
+    explanation: "ホジキンは関節リウマチのため手が変形した状態でX線結晶学の繊細な実験を続けました。インスリンの構造決定は彼女が最初に取り組み始めてから実に35年かかりました。マーガレット・サッチャーはホジキンの教え子であり、サッチャーは首相になった後も「私の科学の恩師」として彼女の写真を執務室に飾っていたそうです。ホジキンはノーベル賞授賞式に間に合うようにカレー海峡を渡ったが、スーツケースを紛失したという笑えるエピソードも残っています。",
+  },
+  {
+    question: "ゲノム解読に功績のある生化学者で、タンパク質・インスリンのアミノ酸配列を初めて解明し、また独立してDNA塩基配列決定法（サンガー法）を開発し、ノーベル化学賞を二度受賞した唯一の人物です。",
+    answer: "フレデリック・サンガー",
+    choices: ["フレデリック・サンガー", "ライナス・ポーリング", "マックス・ペルーツ", "ジョン・ケンドリュー"],
+    explanation: "サンガーはノーベル賞を二度受賞した科学者でありながら、非常に謙虚で控えめな性格でした。「私は最高の科学者ではなく、ただ長い時間を研究室で過ごしただけだ」と語ったといいます。引退後はガーデニングに夢中になり、ノーベル賞受賞者が庭仕事をしている姿を近隣の人々がびっくりして見ていたそうです。彼はナイト号の授与も辞退しており、「サー・フレデリックと呼ばれるのは気持ち悪い」と語ったと伝えられています。",
+  },
+  {
+    question: "量子電磁力学を発展させ、その業績でノーベル物理学賞を受賞したアメリカの物理学者です。ファインマン図という視覚的手法を発明し、物理学の教育でも革命を起こしました。「物理法則の特性」など科学啓蒙書でも著名です。",
+    answer: "リチャード・ファインマン",
+    choices: ["リチャード・ファインマン", "ジュリアン・シュウィンガー", "朝永振一郎", "マレー・ゲルマン"],
+    explanation: "ファインマンはボンゴドラム奏者として本格的にナイトクラブで演奏した物理学者です。また彼は金庫破りが趣味で、マンハッタン計画中にロスアラモス研究所の機密書類入り金庫を何度も開けて回り、所長を恐怖に陥れました。チャレンジャー号爆発事故の調査委員会では、NASAの隠蔽体質に対して氷水の入ったコップにOリングを浸してみせるだけで問題点を一瞬で証明するという劇的なパフォーマンスを披露しました。",
+  },
+  {
+    question: "化学結合の理論と量子化学の発展に多大な貢献をし、ノーベル化学賞とノーベル平和賞を受賞した唯一の個人受賞者です。後半生は核兵器廃絶運動に情熱を注ぎ、「ビタミンCの大量摂取が健康に良い」という主張でも知られます。",
+    answer: "ライナス・ポーリング",
+    choices: ["ライナス・ポーリング", "ロバート・マリケン", "ウォルター・コーン", "ジョン・ポープル"],
+    explanation: "ポーリングはビタミンCを1日に数グラム以上摂取することを強く勧め、自らも毎日大量に飲み続けました。科学界からは「ビタミンCの過剰摂取は効果がない」と批判されましたが、彼は亡くなるまで信念を曲げませんでした。またDNAの構造を先に発見しようとしたが三重らせん構造という誤った提案を発表してしまい、ワトソンとクリックに先を越されました。ポーリングは「自分が一番悔しい失敗」としてこの出来事を挙げています。",
+  },
+  {
+    question: "X線を発見したドイツの物理学者で、1895年に実験中に偶然発見した謎の放射線に「X線」と名づけました。初代ノーベル物理学賞受賞者です。その発見は医療診断に革命をもたらしました。特許取得を拒否して発見を人類共有の財産としました。",
+    answer: "ヴィルヘルム・レントゲン",
+    choices: ["ヴィルヘルム・レントゲン", "フィリップ・レーナルト", "ハインリヒ・ヘルツ", "ジョセフ・ジョン・トムソン"],
+    explanation: "レントゲンはX線を発見した夜、妻の手をX線で撮影し、骨が写った画像を見た妻が「自分の死を見た気がした」と怯えたという有名な逸話があります。彼は特許を一切取得せず「科学の発見は全人類のものだ」という信念を持っていましたが、その結果として財産はほとんど残らず、第一次世界大戦後のインフレで貯蓄が消え、晩年は貧困の中で亡くなりました。また彼は発見を公表した後、「X線とは何か」という無数の手紙に几帳面に返事を書き続けたそうです。",
+  },
+];
+
+let currentStage = 0;
+let currentQuestion = 0;
+let stageScore = 0;
+let totalScore = 0;
+let stageScores = [];
+let answered = false;
+
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
+function startGame() {
+  currentStage = 0;
+  currentQuestion = 0;
+  stageScore = 0;
+  totalScore = 0;
+  stageScores = [];
+  loadQuestion();
+  showScreen('quiz-screen');
+}
+
+function getQ() {
+  return quizData[currentStage * 5 + currentQuestion];
+}
+
+function loadQuestion() {
+  answered = false;
+  const q = getQ();
+  const qNum = currentQuestion + 1;
+  const stageNum = currentStage + 1;
+
+  document.getElementById('stage-label').textContent = `STAGE ${stageNum}`;
+  document.getElementById('q-label').textContent = `QUESTION ${qNum} / 5`;
+  document.getElementById('current-score').textContent = stageScore;
+  document.getElementById('current-max').textContent = currentQuestion;
+  document.getElementById('progress-fill').style.width = `${currentQuestion / 5 * 100}%`;
+  document.getElementById('q-text').textContent = q.question;
+
+  const choices = document.getElementById('choices');
+  choices.innerHTML = '';
+
+  const letters = ['A', 'B', 'C', 'D'];
+  q.choices.forEach((c, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'choice-btn';
+    btn.innerHTML = `<span class="choice-letter">${letters[i]}</span>${c}`;
+    btn.onclick = () => selectAnswer(c, btn);
+    choices.appendChild(btn);
+  });
+
+  document.getElementById('result-card').classList.remove('active');
+  document.getElementById('btn-next').classList.remove('active');
+
+  // scroll to top
+  document.getElementById('quiz-screen').scrollTo(0, 0);
+  window.scrollTo(0, 0);
+}
+
+function selectAnswer(choice, btn) {
+  if (answered) return;
+  answered = true;
+  const q = getQ();
+  const isCorrect = choice === q.answer;
+
+  const allBtns = document.querySelectorAll('.choice-btn');
+  allBtns.forEach(b => {
+    b.classList.add('disabled');
+    b.onclick = null;
+    const label = b.textContent.slice(1);
+    if (label === q.answer) b.classList.add('correct');
+  });
+
+  if (isCorrect) {
+    btn.classList.add('correct');
+    stageScore++;
+    totalScore++;
+  } else {
+    btn.classList.add('wrong');
+  }
+
+  const rc = document.getElementById('result-card');
+  const rv = document.getElementById('result-verdict');
+  const ra = document.getElementById('result-answer');
+  const rd = document.getElementById('result-desc');
+
+  rv.className = 'result-verdict ' + (isCorrect ? 'correct-v' : 'wrong-v');
+  rv.innerHTML = isCorrect ? '✓ 正解！' : '✗ 不正解';
+  ra.innerHTML = `正解は <strong>${q.answer}</strong>`;
+  rd.textContent = q.explanation;
+
+  rc.classList.add('active');
+
+  const isLast = currentQuestion === 4;
+  document.getElementById('btn-next').textContent = isLast ? 'ステージ結果を見る →' : 'つぎの問題へ →';
+  document.getElementById('btn-next').classList.add('active');
+
+  document.getElementById('current-score').textContent = stageScore;
+  document.getElementById('current-max').textContent = currentQuestion + 1;
+
+  setTimeout(() => {
+    rc.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }, 200);
+}
+
+function nextQuestion() {
+  currentQuestion++;
+  if (currentQuestion >= 5) {
+    showStageResult();
+  } else {
+    loadQuestion();
+  }
+}
+
+function showStageResult() {
+  stageScores.push(stageScore);
+  const avg = stageScores.reduce((a, b) => a + b, 0) / stageScores.length;
+  const perfectCount = stageScores.filter(s => s === 5).length;
+  const isLast = currentStage === 9;
+
+  document.getElementById('stage-result-title').textContent = `ステージ${currentStage + 1} クリア！`;
+  document.getElementById('stage-score-val').textContent = stageScore;
+  document.getElementById('perfect-count').textContent = perfectCount;
+  document.getElementById('avg-score-val').textContent = avg.toFixed(1);
+
+  let icon = '⭐';
+  let praise = '';
+  if (stageScore === 5) {
+    icon = '🏆';
+    praise = `完璧です！全問正解とは素晴らしい！あなたの科学知識は本物です。歴史的な科学者たちもきっと喜んでいるでしょう！`;
+  } else if (stageScore >= 4) {
+    icon = '🌟';
+    praise = `4問正解！とても優秀です！科学への深い関心と理解が伝わってきます。もう少しで完璧ですね！`;
+  } else if (stageScore >= 3) {
+    icon = '👏';
+    praise = `3問正解！よく頑張りました！科学の歴史は奥が深いですね。着実に知識が身についています！`;
+  } else if (stageScore >= 2) {
+    icon = '💪';
+    praise = `2問正解！まだまだこれから！科学者たちの面白いエピソードをもっと覚えていきましょう！`;
+  } else {
+    icon = '🔬';
+    praise = `まずは1問正解できました！科学の世界への第一歩を踏み出しましたね。次のステージで挽回しましょう！`;
+  }
+
+  document.getElementById('result-icon').textContent = icon;
+  document.getElementById('praise-text').textContent = praise;
+
+  const nextBtn = document.getElementById('next-stage-btn');
+  nextBtn.textContent = isLast ? '最終結果を見る 🎓' : `ステージ${currentStage + 2}へ進む →`;
+  nextBtn.onclick = isLast ? showFinalResult : nextStage;
+
+  launchFireworks('fireworks');
+  showScreen('stage-result-screen');
+}
+
+function nextStage() {
+  currentStage++;
+  currentQuestion = 0;
+  stageScore = 0;
+  loadQuestion();
+  showScreen('quiz-screen');
+}
+
+function showFinalResult() {
+  const avg = stageScores.reduce((a, b) => a + b, 0) / stageScores.length;
+  document.getElementById('total-score-num').textContent = totalScore;
+  document.getElementById('final-avg').textContent = avg.toFixed(1);
+
+  const pct = totalScore / 50;
+  const dash = 364.4;
+  document.getElementById('final-ring').style.strokeDashoffset = dash * (1 - pct);
+
+  let rank, praise;
+  if (totalScore >= 48) { rank = '🏆 伝説の科学博士'; praise = '驚異的なスコアです！歴史的科学者の知識では世界トップクラスといえるでしょう。ノーベル賞レベルの博識ぶりに脱帽です！'; }
+  else if (totalScore >= 40) { rank = '🎓 科学大学院生'; praise = 'とても素晴らしいスコアです！科学史への深い理解と情熱が感じられます。あと一歩で伝説の称号も夢ではありません！'; }
+  else if (totalScore >= 30) { rank = '🔬 科学研究者'; praise = '立派なスコアです！50問の科学者クイズでこれだけ答えられるのは相当な知識の持ち主ですよ。'; }
+  else if (totalScore >= 20) { rank = '📚 科学愛好家'; praise = '半分以上の科学者を見事に当てました！科学への興味と好奇心がスコアに表れています。'; }
+  else { rank = '🌱 科学入門者'; praise = '科学の世界への第一歩を踏み出しました！各問の解説を読み返して、偉大な科学者たちのエピソードを楽しんでみてください。'; }
+
+  document.getElementById('final-rank').textContent = rank;
+  document.getElementById('final-praise').textContent = praise;
+
+  launchFireworks('fireworks-final');
+  showScreen('final-screen');
+}
+
+function restartGame() {
+  startGame();
+}
+
+function launchFireworks(containerId) {
+  const container = document.getElementById(containerId);
+  container.innerHTML = '';
+  const colors = ['#e2b04a', '#4a8fe2', '#e24a7a', '#3ecf8e', '#fff'];
+  for (let i = 0; i < 40; i++) {
+    setTimeout(() => {
+      const p = document.createElement('div');
+      p.className = 'particle';
+      const x = Math.random() * 100;
+      const y = Math.random() * 60 + 10;
+      const tx = (Math.random() - 0.5) * 200;
+      const ty = (Math.random() - 0.5) * 200;
+      p.style.cssText = `left:${x}%;top:${y}%;background:${colors[Math.floor(Math.random()*colors.length)]};--tx:${tx}px;--ty:${ty}px;animation-duration:${0.8+Math.random()*0.8}s;animation-delay:${Math.random()*0.4}s;width:${4+Math.random()*8}px;height:${4+Math.random()*8}px;`;
+      container.appendChild(p);
+    }, i * 30);
+  }
+}
+</script>
+</body>
+</html>
