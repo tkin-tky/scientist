@@ -177,6 +177,66 @@
   }
   .btn-primary:active { transform: scale(0.96); }
 
+  /* ===== STAGE SELECT ===== */
+  .stage-select-section {
+    width: 100%;
+    max-width: 340px;
+    margin-bottom: 24px;
+  }
+  .stage-select-label {
+    font-size: 11px;
+    color: var(--text-muted);
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    margin-bottom: 12px;
+    text-align: center;
+  }
+  .stage-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 8px;
+  }
+  .stage-cell {
+    aspect-ratio: 1;
+    border-radius: 10px;
+    border: 1.5px solid rgba(226,176,74,0.25);
+    background: var(--surface);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.18s;
+    position: relative;
+    overflow: hidden;
+  }
+  .stage-cell:active { transform: scale(0.93); }
+  .stage-cell.selected {
+    border-color: var(--accent);
+    background: rgba(226,176,74,0.15);
+    box-shadow: 0 0 14px rgba(226,176,74,0.3);
+  }
+  .stage-cell-num {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--accent);
+    line-height: 1;
+  }
+  .stage-cell-label {
+    font-size: 9px;
+    color: var(--text-muted);
+    margin-top: 3px;
+    letter-spacing: 0.05em;
+  }
+  .stage-cell.selected .stage-cell-label { color: var(--accent); }
+  .stage-select-hint {
+    text-align: center;
+    font-size: 12px;
+    color: var(--text-muted);
+    margin-top: 10px;
+  }
+  .stage-select-hint span { color: var(--accent); font-weight: 700; }
+
   /* ===== QUIZ SCREEN ===== */
   #quiz-screen { gap: 0; }
 
@@ -554,6 +614,13 @@
     <div class="title-info-row"><span>選択肢</span><span>4択</span></div>
     <div class="title-info-row"><span>解説</span><span>各問あり</span></div>
   </div>
+
+  <div class="stage-select-section">
+    <div class="stage-select-label">— スタートステージを選択 —</div>
+    <div class="stage-grid" id="stage-grid"></div>
+    <div class="stage-select-hint">ステージ <span id="selected-stage-hint">1</span> からスタート</div>
+  </div>
+
   <button class="btn-primary" onclick="startGame()">ゲームスタート</button>
 </div>
 
@@ -961,6 +1028,27 @@ let stageScore = 0;
 let totalScore = 0;
 let stageScores = [];
 let answered = false;
+let selectedStartStage = 0;
+
+function initStageGrid() {
+  const grid = document.getElementById('stage-grid');
+  grid.innerHTML = '';
+  for (let i = 0; i < 10; i++) {
+    const cell = document.createElement('div');
+    cell.className = 'stage-cell' + (i === selectedStartStage ? ' selected' : '');
+    cell.innerHTML = `<span class="stage-cell-num">${i + 1}</span><span class="stage-cell-label">STAGE</span>`;
+    cell.onclick = () => selectStartStage(i);
+    grid.appendChild(cell);
+  }
+}
+
+function selectStartStage(idx) {
+  selectedStartStage = idx;
+  document.querySelectorAll('.stage-cell').forEach((c, i) => {
+    c.classList.toggle('selected', i === idx);
+  });
+  document.getElementById('selected-stage-hint').textContent = idx + 1;
+}
 
 function showScreen(id) {
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
@@ -968,7 +1056,7 @@ function showScreen(id) {
 }
 
 function startGame() {
-  currentStage = 0;
+  currentStage = selectedStartStage;
   currentQuestion = 0;
   stageScore = 0;
   totalScore = 0;
@@ -976,6 +1064,8 @@ function startGame() {
   loadQuestion();
   showScreen('quiz-screen');
 }
+
+initStageGrid();
 
 function getQ() {
   return quizData[currentStage * 5 + currentQuestion];
@@ -1142,7 +1232,9 @@ function showFinalResult() {
 }
 
 function restartGame() {
-  startGame();
+  selectedStartStage = 0;
+  initStageGrid();
+  showScreen('title-screen');
 }
 
 function launchFireworks(containerId) {
